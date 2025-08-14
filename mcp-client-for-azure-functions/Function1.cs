@@ -35,7 +35,7 @@ public class Function1
         var client = await McpClientFactory.CreateAsync(clientTransport);
 
         var tools = await client.ListToolsAsync();
-        var tool = tools.FirstOrDefault();
+        var tool = tools.FirstOrDefault(t => t.Name == "microsoft_docs_search");
         if (tool is null)
         {
             return new BadRequestObjectResult("No tools found in MCP server.");
