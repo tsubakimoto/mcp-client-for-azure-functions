@@ -1,0 +1,7 @@
+@hostname = http://localhost:7177
+
+### SearchDocByQuery
+GET {{hostname}}/api/SearchDocByQuery?query=Please%20tell%20me%20about%20Azure%20Functions
+
+### FetchDocByUrl
+GET {{hostname}}/api/FetchDocByUrl?url=https%3A%2F%2Flearn.microsoft.com%2Fja-jp%2Fdotnet%2Fcore%2Fintroduction
