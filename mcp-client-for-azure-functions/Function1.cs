@@ -20,8 +20,8 @@ public class Function1
         _logger = logger;
     }
 
-    [Function("Function1")]
-    public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    [Function("SearchDocByQuery")]
+    public async Task<IActionResult> RunSearchDocByQueryAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
