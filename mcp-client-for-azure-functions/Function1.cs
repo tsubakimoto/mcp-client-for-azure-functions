@@ -104,6 +104,83 @@ public class Function1
 
         return new NotFoundResult();
     }
+
+    [Function("FetchDocByQuery")]
+    public async Task<IActionResult> RunFetchDocByQueryAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    {
+        _logger.LogInformation("C# HTTP trigger function processed a request.");
+
+        string query = req.Query["query"].ToString();
+        if (string.IsNullOrEmpty(query))
+        {
+            return new BadRequestObjectResult("Please provide a query in the query string.");
+        }
+
+        var client = await McpClientFactory.CreateAsync(ClientTransport);
+        var tools = await client.ListToolsAsync();
+
+        var searchTool = tools.FirstOrDefault(t => t.Name == "microsoft_docs_search");
+        var fetchTool = tools.FirstOrDefault(t => t.Name == "microsoft_docs_fetch");
+        if (searchTool is null || fetchTool is null)
+        {
+            return new BadRequestObjectResult("No tools found in MCP server.");
+        }
+        _logger.LogInformation($"{searchTool.Name} ({searchTool.Description})");
+        _logger.LogInformation($"{fetchTool.Name} ({fetchTool.Description})");
+
+        var searchResult = await client.CallToolAsync(
+            searchTool.Name,
+            new Dictionary<string, object?>
+            {
+                ["query"] = query
+            });
+
+        List<MSLearnContent> contents = new();
+        foreach (var content in searchResult.Content)
+        {
+            if (content is not TextContentBlock tb)
+            {
+                continue;
+            }
+
+            var c = JsonSerializer.Deserialize<ICollection<MSLearnContent>>(tb.Text);
+            if (c is not null)
+            {
+                contents.AddRange(c);
+            }
+        }
+
+        if (!contents.Any())
+        {
+            return new NotFoundResult();
+        }
+
+        IEnumerable<Uri> urls = contents.Where(c => !string.IsNullOrEmpty(c.ContentUrl))
+            .Select(c => new Uri(c.ContentUrl!))
+            .Distinct()
+            .ToList();
+
+        List<string> response = new();
+        foreach (var url in urls)
+        {
+            var fetchResult = await client.CallToolAsync(
+                fetchTool.Name,
+                new Dictionary<string, object?>
+                {
+                    ["url"] = url
+                });
+
+            foreach (var c in fetchResult.Content)
+            {
+                if (c is TextContentBlock tb)
+                {
+                    response.Add(tb.Text);
+                }
+            }
+        }
+
+        return new OkObjectResult(response);
+    }
 }
 
 public class MSLearnContent
