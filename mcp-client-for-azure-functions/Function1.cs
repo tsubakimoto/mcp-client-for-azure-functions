@@ -33,6 +33,12 @@ public class Function1
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
+        string query = req.Query["query"].ToString();
+        if (string.IsNullOrEmpty(query))
+        {
+            return new BadRequestObjectResult("Please provide a query in the query string.");
+        }
+
         var client = await McpClientFactory.CreateAsync(ClientTransport);
         var tools = await client.ListToolsAsync();
         var tool = tools.FirstOrDefault(t => t.Name == "microsoft_docs_search");
@@ -46,7 +52,7 @@ public class Function1
             tool.Name,
             new Dictionary<string, object?>
             {
-                ["query"] = "Please tell me about Azure Functions."
+                ["query"] = query
             });
 
         foreach (var content in result.Content)
@@ -62,7 +68,7 @@ public class Function1
     }
 
     [Function("FetchDocByUrl")]
-    public async Task<IActionResult> RunFetchDocAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    public async Task<IActionResult> RunFFetchDocByUrlAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
