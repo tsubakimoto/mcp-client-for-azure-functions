@@ -68,7 +68,7 @@ public class Function1
     }
 
     [Function("FetchDocByUrl")]
-    public async Task<IActionResult> RunFFetchDocByUrlAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    public async Task<IActionResult> RunFetchDocByUrlAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
